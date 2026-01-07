@@ -2,8 +2,8 @@
 
 const mapTilerApiKey = '6kybY9Exzowy9u4AmHWC'; // 请替换成你自己的 MapTiler API Key
 // 后端服务器的地址，我们把它定义成一个常量，方便管理
-const API_URL = 'http://localhost:5000/api/events';
-
+// const API_URL = 'http://localhost:5000/api/events';
+const API_URL = 'https://realtime-map-server-btex.onrender.com/api/events';
 const map = new maplibregl.Map({
     container: 'map', // 地图容器的 ID,"去把自己画进去"
     style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${mapTilerApiKey}`, 
@@ -136,12 +136,64 @@ map.on('load', () => {
     fetchAndRenderEvents();
 });
 
-// 2. 监听“取消”按钮，关闭对话框并重置状态
+// 提交表单：在点击地图选定坐标后，提交新事件
+eventForm.addEventListener('submit', async (e) => {
+    e.preventDefault(); // 阻止表单默认刷新页面
+
+    if (!clickedLngLat) {
+        alert('请先在地图上点击选择位置');
+        return;
+    }
+
+    const description = descriptionInput.value.trim();
+    if (!description) {
+        alert('请输入事件描述');
+        return;
+    }
+
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                description,
+                // 按后端的 GeoJSON 要求发送 location
+                location: {
+                    type: 'Point',
+                    coordinates: [clickedLngLat.lng, clickedLngLat.lat],
+                },
+            }),
+        });
+
+        if (!res.ok) {
+            const errText = await res.text();
+            console.error('创建事件失败:', errText);
+            alert('创建事件失败');
+            return;
+        }
+
+        const { data: newEvent } = await res.json();
+        console.log('创建成功的事件:', newEvent);
+
+        // 把新事件加到本地数组，方便后续“附近已有事件”判断
+        events.push(newEvent);
+
+        // 在地图上添加新标记
+        addMarkerToMap(newEvent);
+
+        // 关闭弹窗并重置输入
+        modal.classList.add('hide');
+        descriptionInput.value = '';
+        clickedLngLat = null;
+    } catch (err) {
+        console.error('提交事件错误:', err);
+        alert('网络或服务器错误');
+    }
+});
+
+// “取消”按钮：关闭弹窗
 cancelBtn.addEventListener('click', () => {
-    // 隐藏模态框
     modal.classList.add('hide');
-    // 清空输入内容
     descriptionInput.value = '';
-    // 清空当前点击坐标（可选）
     clickedLngLat = null;
 });

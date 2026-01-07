@@ -1,0 +1,29 @@
+<!-- filepath: realtime-map-project/client/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实时事件地图</title>
+    <link href='https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css' rel='stylesheet' />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="map"></div>
+    <div id="event-modal" class="modal-overlay hide">
+        <div class="modal-content">
+            <h2>在此处标记新事件</h2>
+            <form id="event-form">
+                <textarea id="event-description" placeholder="输入事件描述，例如：交警正在查电动车..." required minlength="5"></textarea>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">提交</button>
+                    <button type="button" id="cancel-btn" class="btn-secondary">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src='https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js'></script>
+    <script src="app.js"></script>
+</body>
+</html>

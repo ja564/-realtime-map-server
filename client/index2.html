@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- 设置字符编码，确保正确显示所有字符 -->
+    <meta charset="UTF-8">
+    <!-- 设置视口，用于移动设备响应式布局 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 浏览器标签页上显示的标题 -->
+    <title>Display a map</title>
+
+    <!-- 从 CDN 加载 MapTiler SDK 的 JavaScript 文件 -->
+    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
+    <!-- 从 CDN 加载 MapTiler SDK 的 CSS 样式文件 -->
+    <link href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css" rel="stylesheet" />
+
+    <!-- 内联 CSS 样式，让地图占满整个屏幕 -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- 这是地图将被渲染到的 HTML 容器 -->
+    <div id="map"></div>
+
+    <!-- 内联 JavaScript 代码，用于初始化地图 -->
+    <!-- <script>
+        // 1. 设置你的 MapTiler API 密钥
+        // 警告：请务必将 'YOUR_MAPTILER_API_KEY_HERE' 替换成你自己的真实密钥
+        maptilersdk.config.apiKey = '6kybY9Exzowy9u4AmHWC';
+
+        // 2. 创建一个新的地图实例
+        const map = new maptilersdk.Map({
+            container: 'map', // 告诉地图要渲染在 id 为 'map' 的容器里
+            style: maptilersdk.MapStyle.STREETS, // 使用预设的街道地图样式
+        });
+    </script> -->
+    <script src="app2.js"></script>
+</body>
+</html>

@@ -21,7 +21,24 @@ const eventForm = document.getElementById('event-form');
 const cancelBtn = document.getElementById('cancel-btn');
 const descriptionInput = document.getElementById('event-description');
 
+// 新增：地址搜索相关 DOM
+const addressInput = document.getElementById('address-input');
+const searchBtn = document.getElementById('search-btn');
+const confirmSearchBtn = document.getElementById('confirm-search-btn');
+
+
+// 新增：不带前缀的全局地址搜索 DOM
+const addressInputGlobal = document.getElementById('address-input-global');
+const searchBtnGlobal = document.getElementById('search-btn-global');
+const confirmSearchBtnGlobal = document.getElementById('confirm-search-btn-global');
+
+
 let clickedLngLat = null; // 用于存储点击的坐标
+
+
+// 新增：搜索得到的坐标和临时标记
+let searchedLngLat = null;
+let searchMarker = null;
 
 // 假设你有一个 events 数组保存当前加载的事件
 let events = [];   // 如果原来已经有，就不要重复声明
@@ -46,6 +63,37 @@ async function fetchAndRenderEvents() {
     }
 }
 
+// 使用 Nominatim 将地址地理编码为经纬度
+async function geocodeAddress(address) {
+    const url =
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&accept-language=zh-CN`;
+
+    try {
+        const res = await fetch(url, {
+            headers: {
+                'User-Agent': 'zhuhai-safe-travel/1.0'
+            }
+        });
+        if (!res.ok) throw new Error('地理编码请求失败');
+
+        const data = await res.json();
+        if (!data.length) {
+            return null; // 没找到
+        }
+        const first = data[0];
+        // Nominatim 返回的是 lat / lon（注意顺序）
+        return {
+            lng: parseFloat(first.lon),
+            lat: parseFloat(first.lat),
+            displayName: first.display_name,
+        };
+    } catch (err) {
+        console.error('地理编码错误:', err);
+        return null;
+    }
+}
+
+
 // 将单个事件作为标记添加到地图上的函数
 function addMarkerToMap(event) {
     const el = document.createElement('div');
@@ -64,6 +112,8 @@ function addMarkerToMap(event) {
         .setLngLat(event.location.coordinates)
         .setPopup(popup)
         .addTo(map);
+
+    
 }
 
 // 地图点击事件：只在附近没有事件时才弹新增输入框
@@ -135,6 +185,201 @@ map.on('load', () => {
     console.log('地图已加载，开始获取事件...');
     fetchAndRenderEvents();
 });
+
+// 1. 监听地图加载完成事件
+map.on('load', () => {
+    console.log('地图已加载，开始获取事件...');
+    fetchAndRenderEvents();
+});
+
+// 2. 地址搜索按钮：根据输入地址定位地图
+const ADDRESS_PREFIX = '珠海市香洲区';   // 你想固定在最前面的部分
+
+searchBtn.addEventListener('click', async () => {
+    let userInput = addressInput.value.trim();
+    if (!userInput) {
+        alert('请输入要搜索的地址');
+        return;
+    }
+
+    // 如果用户输入里已经包含前缀，就不重复加
+    let fullAddress;
+    if (userInput.startsWith(ADDRESS_PREFIX)) {
+        fullAddress = userInput;
+    } else {
+        fullAddress = ADDRESS_PREFIX + userInput;
+    }
+
+    const result = await geocodeAddress(fullAddress);
+    if (!result) {
+        alert('没有找到对应的位置，请尝试输入更详细的地址。');
+        return;
+    }
+
+    const { lng, lat, displayName } = result;
+    searchedLngLat = { lng, lat };
+
+    // 地图飞到目标位置
+    map.flyTo({ center: [lng, lat], zoom: 16 });
+
+    // 如果已经有旧的搜索标记，先移除
+    if (searchMarker) {
+        searchMarker.remove();
+    }
+
+    // 在该位置添加一个临时标记
+    const el = document.createElement('div');
+    el.className = 'event-marker';
+
+    const popup = new maplibregl.Popup({ offset: 25 })
+        .setHTML(`
+            <h3>搜索结果</h3>
+            <p>搜索地址：${fullAddress}</p>
+            <p style="font-size:12px;color:#666;">${displayName}</p>
+        `);
+
+    searchMarker = new maplibregl.Marker(el)
+        .setLngLat([lng, lat])
+        .setPopup(popup)
+        .addTo(map);
+
+    searchMarker.togglePopup();
+});
+
+// 2b. 全局地址搜索按钮：不加任何前缀，直接用用户输入
+searchBtnGlobal.addEventListener('click', async () => {
+    const addr = addressInputGlobal.value.trim();
+    if (!addr) {
+        alert('请输入要搜索的地址');
+        return;
+    }
+
+    const result = await geocodeAddress(addr);  // 这里不加 ADDRESS_PREFIX
+    if (!result) {
+        alert('没有找到对应的位置，请尝试输入更详细的地址。');
+        return;
+    }
+
+    const { lng, lat, displayName } = result;
+    searchedLngLat = { lng, lat };   // 仍然复用同一个 searchedLngLat，方便确认按钮使用
+
+    // 地图飞到目标位置
+    map.flyTo({ center: [lng, lat], zoom: 16 });
+
+    // 如果已经有旧的搜索标记，先移除
+    if (searchMarker) {
+        searchMarker.remove();
+    }
+
+    // 在该位置添加一个临时标记
+    const el = document.createElement('div');
+    el.className = 'event-marker';
+
+    const popup = new maplibregl.Popup({ offset: 25 })
+        .setHTML(`
+            <h3>全局搜索结果</h3>
+            <p>搜索地址：${addr}</p>
+            <p style="font-size:12px;color:#666;">${displayName}</p>
+        `);
+
+    searchMarker = new maplibregl.Marker(el)
+        .setLngLat([lng, lat])
+        .setPopup(popup)
+        .addTo(map);
+
+    searchMarker.togglePopup();
+});
+
+// 3. 确认按钮：在搜索到的位置创建一个默认“正在查车中”的事件
+confirmSearchBtn.addEventListener('click', async () => {
+    if (!searchedLngLat) {
+        alert('请先输入地址并点击“搜索”。');
+        return;
+    }
+
+    const defaultDesc = '正在查车中';
+
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                description: defaultDesc,
+                location: {
+                    type: 'Point',
+                    coordinates: [searchedLngLat.lng, searchedLngLat.lat],
+                },
+            }),
+        });
+
+        if (!res.ok) {
+            const errText = await res.text();
+            console.error('通过搜索创建事件失败:', errText);
+            alert('创建事件失败');
+            return;
+        }
+
+        const { data: newEvent } = await res.json();
+        console.log('通过搜索创建的事件:', newEvent);
+
+        events.push(newEvent);
+        addMarkerToMap(newEvent);
+
+        alert('已在该位置添加“正在查车中”的事件');
+
+        // 保留 searchedLngLat（方便以后继续用），也可以选择清空：
+        // searchedLngLat = null;
+    } catch (err) {
+        console.error('通过搜索创建事件错误:', err);
+        alert('网络或服务器错误');
+    }
+});
+
+// 3b. 全局确认按钮：在搜索到的位置创建一个默认“正在查车中”的事件
+confirmSearchBtnGlobal.addEventListener('click', async () => {
+    if (!searchedLngLat) {
+        alert('请先输入地址并点击“搜索”。');
+        return;
+    }
+
+    const defaultDesc = '正在查车中';
+
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                description: defaultDesc,
+                location: {
+                    type: 'Point',
+                    coordinates: [searchedLngLat.lng, searchedLngLat.lat],
+                },
+            }),
+        });
+
+        if (!res.ok) {
+            const errText = await res.text();
+            console.error('通过搜索创建事件失败:', errText);
+            alert('创建事件失败');
+            return;
+        }
+
+        const { data: newEvent } = await res.json();
+        console.log('通过搜索创建的事件:', newEvent);
+
+        events.push(newEvent);
+        addMarkerToMap(newEvent);
+
+        alert('已在该位置添加“正在查车中”的事件');
+
+        // 保留 searchedLngLat（方便以后继续用），也可以选择清空：
+        // searchedLngLat = null;
+    } catch (err) {
+        console.error('通过搜索创建事件错误:', err);
+        alert('网络或服务器错误');
+    }
+});
+
 
 // 提交表单：在点击地图选定坐标后，提交新事件
 eventForm.addEventListener('submit', async (e) => {

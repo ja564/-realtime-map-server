@@ -30,7 +30,7 @@ const eventSchema = new mongoose.Schema({
       type: Date,
       default: Date.now,
       // 设置 TTL (Time-To-Live) 索引
-      expires: 3600 // 文档将在创建后 3600 秒 (1小时) 后自动删除
+      expires: 10800 // 文档将在创建后 3600 秒 (1小时) 后自动删除
     }
   });
   

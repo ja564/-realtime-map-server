@@ -2,8 +2,8 @@
 
 const mapTilerApiKey = '6kybY9Exzowy9u4AmHWC'; // 请替换成你自己的 MapTiler API Key
 // 后端服务器的地址，我们把它定义成一个常量，方便管理
-// const API_URL = 'http://localhost:5000/api/events';
-const API_URL = 'https://realtime-map-server-btex.onrender.com/api/events';
+const API_URL = 'http://localhost:5000/api/events';
+// const API_URL = 'https://realtime-map-server-btex.onrender.com/api/events';
 const map = new maplibregl.Map({
     container: 'map', // 地图容器的 ID,"去把自己画进去"
     style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${mapTilerApiKey}`, 
@@ -45,10 +45,20 @@ let events = [];   // 如果原来已经有，就不要重复声明
 
 // ---------------------- 函数定义 ----------------------
 
+//在 fetchAndRenderEvents 外面包一层超时逻辑，例如 20 秒超时后提示“服务器正在唤醒，请稍后重试”。
+async function fetchWithTimeout(url, options = {}, timeout = 20000) {
+    return Promise.race([
+        fetch(url, options),
+        new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('请求超时')), timeout)
+        ),
+    ]);
+}
+
 // 从后端获取并渲染事件的函数
 async function fetchAndRenderEvents() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetchWithTimeout(API_URL);
         if (!response.ok) {
             throw new Error('获取事件失败');
         }
@@ -60,6 +70,7 @@ async function fetchAndRenderEvents() {
         events.forEach(ev => addMarkerToMap(ev));
     } catch (error) {
         console.error('获取事件错误:', error);
+        alert('服务器在唤醒，2分钟后再试。规范骑行消息你可以先在群聊中分享。');
     }
 }
 

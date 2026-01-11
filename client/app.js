@@ -453,3 +453,34 @@ cancelBtn.addEventListener('click', () => {
     descriptionInput.value = '';
     clickedLngLat = null;
 });
+
+
+// // 注册 Service Worker（PWA 必备）
+// if ('serviceWorker' in navigator) {
+//     window.addEventListener('load', () => {
+//         navigator.serviceWorker
+//             .register('/service-worker.js')
+//             .then((reg) => {
+//                 console.log('Service Worker 注册成功:', reg.scope);
+//             })
+//             .catch((err) => {
+//                 console.error('Service Worker 注册失败:', err);
+//             });
+//     });
+// }
+
+// 只在 http(s) 环境下注册 Service Worker
+if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then(reg => {
+        console.log('Service Worker 注册成功:', reg.scope);
+      })
+      .catch(err => {
+        console.error('Service Worker 注册失败:', err);
+      });
+  });
+} else {
+  console.log('当前协议不支持 Service Worker:', window.location.protocol);
+}

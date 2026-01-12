@@ -82,11 +82,14 @@ async function geocodeAddress(address) {
     try {
         const res = await fetch(url, {
             headers: {
-                'User-Agent': 'zhuhai-safe-travel/1.0'
+                // 'User-Agent': 'zhuhai-safe-travel/1.0'
+                'User-Agent': 'Mozilla/5.0 (zhuhai-safe-travel/1.0)'
             }
         });
-        if (!res.ok) throw new Error('地理编码请求失败');
-
+        // if (!res.ok) throw new Error('地理编码请求失败');
+        if (!res.ok) {
+            throw new Error('地理编码请求失败，状态码: ' + res.status);
+        }
         const data = await res.json();
         if (!data.length) {
             return null; // 没找到
@@ -100,6 +103,8 @@ async function geocodeAddress(address) {
         };
     } catch (err) {
         console.error('地理编码错误:', err);
+        // 临时加一行，方便你在手机上看到具体错误
+        alert('地理编码错误: ' + err.message);
         return null;
     }
 }

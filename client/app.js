@@ -2,8 +2,8 @@
 
 const mapTilerApiKey = '6kybY9Exzowy9u4AmHWC'; // 请替换成你自己的 MapTiler API Key
 // 后端服务器的地址，我们把它定义成一个常量，方便管理
-const API_URL = 'http://localhost:5000/api/events';
-// const API_URL = 'https://realtime-map-server-btex.onrender.com/api/events';
+// const API_URL = 'http://localhost:5000/api/events';
+const API_URL = 'https://realtime-map-server-btex.onrender.com/api/events';
 const map = new maplibregl.Map({
     container: 'map', // 地图容器的 ID,"去把自己画进去"
     style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${mapTilerApiKey}`, 

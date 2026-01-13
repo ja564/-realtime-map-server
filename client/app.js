@@ -490,7 +490,7 @@ if ('serviceWorker' in navigator && window.location.protocol.startsWith('http'))
   console.log('当前协议不支持 Service Worker:', window.location.protocol);
 }
 
-if (!('beforeinstallprompt' in window)) {
+if (!('BeforeInstallPromptEvent' in window)) {
   // 非标准浏览器
   alert('当前浏览器可能不支持一键安装。\n你可以在浏览器菜单里选择“添加到桌面”来创建快捷方式。');
 }

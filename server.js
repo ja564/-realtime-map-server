@@ -11,6 +11,7 @@ const connectDB = require('./config/db'); // 引入数据库连接函数// <--- 
 connectDB();
 
 const eventRoutes = require('./routes/eventRoutes');
+const geocodeRouter = require('./routes/geocode');
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(cors());
 app.use(express.json()); 
 
 app.use('/api/events', eventRoutes);
+app.use('/api', geocodeRouter);
 
 
 // 定义服务器端口。优先使用环境变量中定义的 PORT，如果没有则使用 5000

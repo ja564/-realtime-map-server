@@ -489,3 +489,29 @@ if ('serviceWorker' in navigator && window.location.protocol.startsWith('http'))
 } else {
   console.log('当前协议不支持 Service Worker:', window.location.protocol);
 }
+
+let deferredPrompt = null;
+const installBtn = document.getElementById('install-btn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('beforeinstallprompt 触发');
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installBtn) {
+    installBtn.classList.remove('hide');
+  }
+});
+
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) {
+      alert('当前暂不支持安装，请稍后再试。');
+      return;
+    }
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    console.log('PWA 安装结果:', choice.outcome);
+    deferredPrompt = null;
+    installBtn.classList.add('hide');
+  });
+}

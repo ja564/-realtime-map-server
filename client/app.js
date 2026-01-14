@@ -2,8 +2,10 @@
 
 const mapTilerApiKey = '6kybY9Exzowy9u4AmHWC'; // 请替换成你自己的 MapTiler API Key
 // 后端服务器的地址，我们把它定义成一个常量，方便管理
-const API_URL = 'http://localhost:5000/api/events';
+// const API_URL = 'http://localhost:5000/api/events';
 // const API_URL = 'https://realtime-map-server-btex.onrender.com/api/events';
+const API_URL = 'https://realtime-map-server-1.onrender.com/api/events';
+
 const map = new maplibregl.Map({
     container: 'map', // 地图容器的 ID,"去把自己画进去"
     style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${mapTilerApiKey}`, 
@@ -659,4 +661,34 @@ if ('serviceWorker' in navigator && window.location.protocol.startsWith('http'))
   });
 } else {
   console.log('当前协议不支持 Service Worker:', window.location.protocol);
+}
+if (!('BeforeInstallPromptEvent' in window)) {
+  // 非标准浏览器
+  alert('当前浏览器可能不支持一键安装。\n你可以在浏览器菜单里选择“添加到桌面”来创建快捷方式。');
+}
+
+let deferredPrompt = null;
+const installBtn = document.getElementById('install-btn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('beforeinstallprompt 触发');
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installBtn) {
+    installBtn.classList.remove('hide');
+  }
+});
+
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) {
+      alert('当前暂不支持安装，请稍后再试。');
+      return;
+    }
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    console.log('PWA 安装结果:', choice.outcome);
+    deferredPrompt = null;
+    installBtn.classList.add('hide');
+  });
 }

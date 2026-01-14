@@ -7,8 +7,10 @@ const URLS_TO_CACHE = [
   '/',
   '/index.html',
   '/app.js',
-  '/styles.css',        // 如果有 CSS 文件就写，没有就删掉这一行
-  'https://api.maptiler.com/maps/streets-v2/style.json?key=6kybY9Exzowy9u4AmHWC'
+  '/style.css',        // 如果有 CSS 文件就写，没有就删掉这一行
+  'https://api.maptiler.com/maps/streets-v2/style.json?key=6kybY9Exzowy9u4AmHWC',
+ '/icons/icon-192.png',
+  '/icons/icon-512.png'
 ];
 
 // 安装阶段：预缓存静态资源

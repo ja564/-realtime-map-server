@@ -2,8 +2,8 @@
 
 const mapTilerApiKey = '6kybY9Exzowy9u4AmHWC'; // 请替换成你自己的 MapTiler API Key
 // 后端服务器的地址，我们把它定义成一个常量，方便管理
-// const API_URL = 'http://localhost:5000/api/events';
-const API_URL = 'https://realtime-map-server-btex.onrender.com/api/events';
+const API_URL = 'http://localhost:5000/api/events';
+// const API_URL = 'https://realtime-map-server-btex.onrender.com/api/events';
 const map = new maplibregl.Map({
     container: 'map', // 地图容器的 ID,"去把自己画进去"
     style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${mapTilerApiKey}`, 
@@ -42,7 +42,11 @@ let searchMarker = null;
 
 // 假设你有一个 events 数组保存当前加载的事件
 let events = [];   // 如果原来已经有，就不要重复声明
-
+// 我的定位相关
+let myLocationMarker = null;   // 地图上的“我的位置”标记
+let myLocationWatchId = null;  // watchPosition 的 ID，方便后面停止监听
+// 已有：准备创建事件时的经纬度
+let selectedLngLat = null;
 // ---------------------- 函数定义 ----------------------
 
 //在 fetchAndRenderEvents 外面包一层超时逻辑，例如 20 秒超时后提示“服务器正在唤醒，请稍后重试”。
@@ -74,39 +78,199 @@ async function fetchAndRenderEvents() {
     }
 }
 
-// 使用 Nominatim 将地址地理编码为经纬度
+// ------- 坐标系转换：GCJ‑02 -> WGS‑84（高德 -> GPS/MapTiler） -------
+
+const PI = 3.1415926535897932384626;
+const A = 6378245.0;              // 地球长半轴
+const EE = 0.006693421622965943;  // 偏心率平方
+
+function outOfChina(lng, lat) {
+    return lng < 72.004 || lng > 137.8347 || lat < 0.8293 || lat > 55.8271;
+}
+
+function transformLat(x, y) {
+    let ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y +
+        0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+    ret += (20.0 * Math.sin(6.0 * x * PI) +
+        20.0 * Math.sin(2.0 * x * PI)) * 2.0 / 3.0;
+    ret += (20.0 * Math.sin(y * PI) +
+        40.0 * Math.sin(y / 3.0 * PI)) * 2.0 / 3.0;
+    ret += (160.0 * Math.sin(y / 12.0 * PI) +
+        320 * Math.sin(y * PI / 30.0)) * 2.0 / 3.0;
+    return ret;
+}
+
+function transformLng(x, y) {
+    let ret = 300.0 + x + 2.0 * y + 0.1 * x * x +
+        0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+    ret += (20.0 * Math.sin(6.0 * x * PI) +
+        20.0 * Math.sin(2.0 * x * PI)) * 2.0 / 3.0;
+    ret += (20.0 * Math.sin(x * PI) +
+        40.0 * Math.sin(x / 3.0 * PI)) * 2.0 / 3.0;
+    ret += (150.0 * Math.sin(x / 12.0 * PI) +
+        300.0 * Math.sin(x / 30.0 * PI)) * 2.0 / 3.0;
+    return ret;
+}
+
+function gcj02ToWgs84(lng, lat) {
+    // 高德(GCJ‑02) -> WGS‑84
+    if (outOfChina(lng, lat)) {
+        return { lng, lat }; // 国外不做偏移
+    }
+    let dLat = transformLat(lng - 105.0, lat - 35.0);
+    let dLng = transformLng(lng - 105.0, lat - 35.0);
+    const radLat = lat / 180.0 * PI;
+    let magic = Math.sin(radLat);
+    magic = 1 - EE * magic * magic;
+    const sqrtMagic = Math.sqrt(magic);
+    dLat = (dLat * 180.0) / ((A * (1 - EE)) / (magic * sqrtMagic) * PI);
+    dLng = (dLng * 180.0) / (A / sqrtMagic * Math.cos(radLat) * PI);
+    const mgLat = lat + dLat;
+    const mgLng = lng + dLng;
+    return {
+        lng: lng - mgLng + lng,
+        lat: lat - mgLat + lat
+    };
+}
+
+
+// 使用后端（高德代理）将地址地理编码为经纬度
 async function geocodeAddress(address) {
-    const url =
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&accept-language=zh-CN`;
+    // API_URL = '.../api/events'
+    const apiBase = API_URL.replace('/events', ''); // 得到 .../api
+    const url = `${apiBase}/geocode?q=${encodeURIComponent(address)}`;
 
     try {
-        const res = await fetch(url, {
-            headers: {
-                // 'User-Agent': 'zhuhai-safe-travel/1.0'
-                'User-Agent': 'Mozilla/5.0 (zhuhai-safe-travel/1.0)'
-            }
-        });
-        // if (!res.ok) throw new Error('地理编码请求失败');
+        const res = await fetch(url);
         if (!res.ok) {
             throw new Error('地理编码请求失败，状态码: ' + res.status);
         }
+
         const data = await res.json();
         if (!data.length) {
-            return null; // 没找到
+            return null; // 真没找到
         }
+
         const first = data[0];
-        // Nominatim 返回的是 lat / lon（注意顺序）
+         // 后端通过高德拿到的是 GCJ‑02，经纬度字段是 first.lon / first.lat
+        const gcjLng = parseFloat(first.lon);
+        const gcjLat = parseFloat(first.lat);
+
+        // 转成 WGS‑84，再给地图和事件使用
+        const wgs = gcj02ToWgs84(gcjLng, gcjLat);
         return {
-            lng: parseFloat(first.lon),
-            lat: parseFloat(first.lat),
+            lng: wgs.lng,
+            lat: wgs.lat,
             displayName: first.display_name,
         };
     } catch (err) {
         console.error('地理编码错误:', err);
-        // 临时加一行，方便你在手机上看到具体错误
-        alert('地理编码错误: ' + err.message);
+        alert('地理编码服务暂时不可用，请稍后再试，或自行在地图上定位。');
         return null;
     }
+}
+
+// // 打开/关闭“新事件”弹窗（如果你已经有，就不要重复定义）
+// function openEventModal() {
+//     document.getElementById('event-modal').classList.remove('hide');
+// }
+// function closeEventModal() {
+//     document.getElementById('event-modal').classList.add('hide');
+// }
+
+// 开启 GPS 定位，并在地图上显示当前所在位置
+function startLocateMe() {
+    if (!navigator.geolocation) {
+        alert('当前浏览器不支持定位功能');
+        return;
+    }
+
+    // 如果之前已经在监听了，先关闭，避免重复
+    if (myLocationWatchId !== null) {
+        navigator.geolocation.clearWatch(myLocationWatchId);
+        myLocationWatchId = null;
+    }
+
+    // 开始持续监听位置变化
+    myLocationWatchId = navigator.geolocation.watchPosition(
+        (pos) => {
+            // 注意：浏览器 geolocation 返回的就是 WGS‑84 坐标，和 MapTiler 一致
+            const lng = pos.coords.longitude;
+            const lat = pos.coords.latitude;
+
+            console.log('GPS 定位:', lng, lat);
+
+            // 第一次定位时或 marker 不存在时创建标记
+            if (!myLocationMarker) {
+                // 容器：里面放“蓝点 + 按钮”
+                const container = document.createElement('div');
+                container.className = 'my-location-container';
+
+                // 蓝点
+                const dot = document.createElement('div');
+                dot.className = 'my-location-marker';
+                container.appendChild(dot);
+                // “添加事件”按钮
+                const btn = document.createElement('button');
+                btn.className = 'my-location-add-btn';
+                btn.textContent = '+';
+
+                // 点击按钮时复用和地图点击一样的逻辑
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // 不触发地图点击
+                    tryOpenCreateEventAt(lng, lat);
+                });
+                container.appendChild(btn);
+
+                // const el = document.createElement('div');
+                // el.className = 'my-location-marker'; // 你可以在 CSS 里定义成蓝色小圆点
+
+                const popup = new maplibregl.Popup({ offset: 15 }).setHTML(
+                    '<p>你当前的大致位置</p>'
+                );
+
+                myLocationMarker = new maplibregl.Marker({
+                    element: container,
+                    anchor: 'center',   
+                })
+                    .setLngLat([lng, lat])
+                    .setPopup(popup)
+                    .addTo(map);
+
+                // 地图飞到当前位置
+                map.flyTo({ center: [lng, lat], zoom: 16 });
+            } else {
+                // 已经有标记了，只更新位置
+                myLocationMarker.setLngLat([lng, lat]);
+            }
+            // 2) 把当前位置当作“选中坐标”，复用事件创建逻辑
+            selectedLngLat = { lng, lat };  // 关键：相当于在地图上点了这个位置
+
+            // 3) 打开“在此处标记新事件”弹窗
+            openEventModal();
+        },
+        (err) => {
+            console.error('定位失败:', err);
+            switch (err.code) {
+                case err.PERMISSION_DENIED:
+                    alert('定位被拒绝，请在浏览器中允许访问位置信息。');
+                    break;
+                case err.POSITION_UNAVAILABLE:
+                    alert('无法获取位置信息，请检查手机 GPS 是否开启。');
+                    break;
+                case err.TIMEOUT:
+                    alert('获取位置信息超时，请稍后重试。');
+                    break;
+                default:
+                    alert('获取位置信息失败。');
+            }
+        },
+        {
+            enableHighAccuracy: true, // 尽量用高精度（会更耗电）
+            timeout: 15000,           // 15 秒超时
+            maximumAge: 10000,        // 10 秒内的缓存定位可接受
+        }
+    );
 }
 
 
@@ -132,10 +296,7 @@ function addMarkerToMap(event) {
     
 }
 
-// 地图点击事件：只在附近没有事件时才弹新增输入框
-map.on('click', (e) => {
-    const { lng, lat } = e.lngLat;
-
+function tryOpenCreateEventAt(lng, lat) {
     const hasEventNearby = events.some(ev => {
         const [evLng, evLat] = ev.location.coordinates;
         const dx = Math.abs(evLng - lng);
@@ -144,12 +305,20 @@ map.on('click', (e) => {
     });
 
     if (hasEventNearby) {
-        return; // 附近已有事件，不再弹输入框
+        alert('附近已有标记事件，此处不再新增。');
+        return;
     }
 
-    // 记录点击坐标并显示新增事件的模态框
+    // 记录坐标并显示新增事件的模态框
     clickedLngLat = { lng, lat };
     modal.classList.remove('hide');
+}
+
+
+// 地图点击事件：只在附近没有事件时才弹新增输入框
+map.on('click', (e) => {
+    const { lng, lat } = e.lngLat;
+    tryOpenCreateEventAt(lng, lat);
 });
 
 // 3. 在渲染事件点时，为已有事件的 marker/图层单独绑定点击逻辑，且阻止冒泡
@@ -202,11 +371,13 @@ map.on('load', () => {
     fetchAndRenderEvents();
 });
 
-// 1. 监听地图加载完成事件
-map.on('load', () => {
-    console.log('地图已加载，开始获取事件...');
-    fetchAndRenderEvents();
-});
+// 额外：给“定位到我”按钮绑定点击事件
+const locateMeBtn = document.getElementById('locate-me-btn');
+if (locateMeBtn) {
+    locateMeBtn.addEventListener('click', () => {
+        startLocateMe();
+    });
+}
 
 // 2. 地址搜索按钮：根据输入地址定位地图
 const ADDRESS_PREFIX = '珠海市香洲区';   // 你想固定在最前面的部分

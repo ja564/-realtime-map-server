@@ -14,7 +14,8 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "mongodb": "^6.17.0",
-    "mongoose": "^8.16.0"
+    "mongoose": "^8.16.0",
+    "node-fetch": "^2.7.0"
   },
   "devDependencies": {
     "@ljharb/tsconfig": "^0.3.2"

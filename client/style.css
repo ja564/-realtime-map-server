@@ -163,7 +163,7 @@ display: none;
 .locate-me-btn {
   position: fixed;          /* 悬浮在视口上，而不是跟着文档流 */
   top: 170px;                /* 距离顶部，可以根据你的标题高度微调 */
-  left: 10px;              /* 距离右侧 80 像素 */
+  left: 10px;              /* 距离左侧 80 像素 */
   z-index: 1000;            /* 保证在地图之上 */
 
   padding: 6px 10px;
@@ -180,6 +180,23 @@ display: none;
 /* 悬停时稍微变实一点 */
 .locate-me-btn:hover {
   background: rgba(0, 123, 255, 0.9);
+}
+
+@media screen and (max-width: 768px) {
+  .locate-me-btn {
+    /* 1. 重置 top 属性，防止它继续把按钮推到屏幕中间 */
+    top: auto;
+    
+    /* 2. 改为固定在底部，符合手机单手操作习惯 */
+    bottom: 30px; 
+    
+    /* 3. 稍微调整水平位置，避免紧贴边缘 */
+    left: 20px;   
+    
+    /* 4. 缩小字体，让按钮看起来更精致，不遮挡地图 */
+    font-size: 16px; 
+    padding: 8px 12px;
+  }
 }
 
 .my-location-container {

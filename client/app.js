@@ -218,9 +218,57 @@ function startLocateMe() {
                 btn.textContent = '+';
 
                 // 点击按钮时复用和地图点击一样的逻辑
-                btn.addEventListener('click', (e) => {
+                btn.addEventListener('click', async(e) => {
                     e.stopPropagation(); // 不触发地图点击
-                    tryOpenCreateEventAt(lng, lat);
+                    // tryOpenCreateEventAt(lng, lat);
+
+                    // 1. 先检查附近是否已有事件（复用你原来的逻辑）
+                    const hasEventNearby = events.some(ev => {
+                        const [evLng, evLat] = ev.location.coordinates;
+                        const dx = Math.abs(evLng - lng);
+                        const dy = Math.abs(evLat - lat);
+                        return dx < 0.001 && dy < 0.001;
+                    });             
+
+                    if (hasEventNearby) {
+                        alert('你当前位置附近已有标记事件，不重复添加。');
+                        return;
+                    }
+
+                    // 2. 没有事件 → 直接调用后端创建默认事件
+                    const defaultDesc = '请规范骑行';
+
+                    try {
+                        const res = await fetch(API_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                description: defaultDesc,
+                                location: {
+                                    type: 'Point',
+                                    coordinates: [lng, lat],   // 注意：用当前位置，而不是 searchedLngLat
+                                },
+                            }),
+                        });
+
+                        if (!res.ok) {
+                            const errText = await res.text();
+                            console.error('通过定位创建事件失败:', errText);
+                            alert('创建事件失败');
+                            return;
+                        }
+
+                        const { data: newEvent } = await res.json();
+                        console.log('通过定位创建的事件:', newEvent);
+
+                        events.push(newEvent);
+                        addMarkerToMap(newEvent);
+
+                        alert('已在你当前位置添加“请规范骑行”的事件');
+                    } catch (err) {
+                        console.error('通过定位创建事件错误:', err);
+                        alert('网络或服务器错误');
+                    }
                 });
                 container.appendChild(btn);
 
@@ -249,7 +297,7 @@ function startLocateMe() {
             selectedLngLat = { lng, lat };  // 关键：相当于在地图上点了这个位置
 
             // 3) 打开“在此处标记新事件”弹窗
-            openEventModal();
+            // openEventModal();
         },
         (err) => {
             console.error('定位失败:', err);
@@ -480,14 +528,14 @@ searchBtnGlobal.addEventListener('click', async () => {
     searchMarker.togglePopup();
 });
 
-// 3. 确认按钮：在搜索到的位置创建一个默认“正在查车中”的事件
+// 3. 确认按钮：在搜索到的位置创建一个默认“请规范骑行”的事件
 confirmSearchBtn.addEventListener('click', async () => {
     if (!searchedLngLat) {
         alert('请先输入地址并点击“搜索”。');
         return;
     }
 
-    const defaultDesc = '正在查车中';
+    const defaultDesc = '请规范骑行';
 
     try {
         const res = await fetch(API_URL, {
@@ -515,7 +563,7 @@ confirmSearchBtn.addEventListener('click', async () => {
         events.push(newEvent);
         addMarkerToMap(newEvent);
 
-        alert('已在该位置添加“正在查车中”的事件');
+        alert('已在该位置添加“请规范骑行”的事件');
 
         // 保留 searchedLngLat（方便以后继续用），也可以选择清空：
         // searchedLngLat = null;
@@ -525,14 +573,14 @@ confirmSearchBtn.addEventListener('click', async () => {
     }
 });
 
-// 3b. 全局确认按钮：在搜索到的位置创建一个默认“正在查车中”的事件
+// 3b. 全局确认按钮：在搜索到的位置创建一个默认“请规范骑行”的事件
 confirmSearchBtnGlobal.addEventListener('click', async () => {
     if (!searchedLngLat) {
         alert('请先输入地址并点击“搜索”。');
         return;
     }
 
-    const defaultDesc = '正在查车中';
+    const defaultDesc = '请规范骑行';
 
     try {
         const res = await fetch(API_URL, {
@@ -560,7 +608,7 @@ confirmSearchBtnGlobal.addEventListener('click', async () => {
         events.push(newEvent);
         addMarkerToMap(newEvent);
 
-        alert('已在该位置添加“正在查车中”的事件');
+        alert('已在该位置添加“请规范骑行”的事件');
 
         // 保留 searchedLngLat（方便以后继续用），也可以选择清空：
         // searchedLngLat = null;

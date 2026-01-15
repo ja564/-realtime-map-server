@@ -195,7 +195,7 @@ display: none;
     
     /* 4. 缩小字体，让按钮看起来更精致，不遮挡地图 */
     font-size: 16px; 
-    padding: 8px 12px;
+    padding: 4px 12px;
   }
 }
 

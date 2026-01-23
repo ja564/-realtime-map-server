@@ -1,0 +1,244 @@
+/* client/style.css */
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* 让页面高度占满屏幕 */
+}
+
+/* 顶部标题样式 */
+.page-title {
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 20px;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 2;           /* 保证在地图之上 */
+}
+
+/* 地图占据剩余空间 */
+#map {
+  /* flex: 1;              占据除标题外的所有高度 */
+  /* min-height: 0; */
+  width: 100%;
+  height: calc(100vh - 140px);  
+}
+
+
+
+.event-marker {
+background-image: url('https://cdn-icons-png.flaticon.com/512/1257/1257369.png');
+background-size: cover;
+width: 40px;
+height: 40px;
+border-radius: 50%;
+cursor: pointer;
+border: 2px solid #fff;
+box-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+
+.modal-overlay {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.6);
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 1000;
+}
+
+.modal-content {
+background: white;
+padding: 20px;
+border-radius: 8px;
+width: 90%;
+max-width: 400px;
+box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal-content h2 {
+margin-top: 0;
+}
+
+#event-description {
+    width: 100%;
+    height: 80px;
+    margin-bottom: 15px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.modal-actions {
+text-align: left;
+}
+
+.hide {
+display: none;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 3;
+}
+
+.search-bar input[type="text"] {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 3;
+}
+
+.search-row input[type="text"] {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 6px 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: #fff;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+}
+
+.btn-secondary {
+  background-color: #fff;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+
+/* .my-location-marker {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #007bff;  
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}  */
+
+
+.my-location-marker {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;  
+  margin-top: -7px;
+  border-radius: 50%;
+  background-color: #007bff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
+/* 悬浮在地图右上角的“定位到我”按钮 */
+.locate-me-btn {
+  position: fixed;          /* 悬浮在视口上，而不是跟着文档流 */
+  top: 170px;                /* 距离顶部，可以根据你的标题高度微调 */
+  left: 10px;              /* 距离左侧 80 像素 */
+  z-index: 1000;            /* 保证在地图之上 */
+
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: none;
+  background: rgba(255, 60, 0, 0.7); /* 半透明蓝色：0.7 为不透明度 */
+  color: #fff;
+  font-size: 25px;
+  cursor: pointer;
+
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 悬停时稍微变实一点 */
+.locate-me-btn:hover {
+  background: rgba(0, 123, 255, 0.9);
+}
+
+@media screen and (max-width: 768px) {
+  .locate-me-btn {
+    /* 1. 重置 top 属性，防止它继续把按钮推到屏幕中间 */
+    top: auto;
+    
+    /* 2. 改为固定在底部，符合手机单手操作习惯 */
+    bottom: 30px; 
+    
+    /* 3. 稍微调整水平位置，避免紧贴边缘 */
+    left: 20px;   
+    
+    /* 4. 缩小字体，让按钮看起来更精致，不遮挡地图 */
+    font-size: 16px; 
+    padding: 4px 12px;
+  }
+}
+
+.my-location-container {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%); /* 让容器中心对齐锚点 */
+}
+
+/* 旁边的 “+” 按钮 */
+.my-location-add-btn {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translate(2px, -50%);
+  padding: 0 4px;
+  height: 16px;
+  line-height: 14px;
+  border-radius: 3px;
+  border: none;
+  font-size: 24px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #333;
+  cursor: pointer;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+}
+
+.my-location-add-btn:hover {
+  background: rgba(255, 255, 255, 1);
+}
+.install-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: none;
+  background: rgba(0, 123, 255, 0.85);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}

@@ -9,6 +9,7 @@ body {
 
 /* 顶部标题样式 */
 .page-title {
+  left: 10px;
   margin: 0;
   padding: 12px 16px;
   font-size: 20px;
@@ -161,21 +162,28 @@ display: none;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
 }
 
+.map-container {
+  flex: 1;                   /* 占满右侧面板剩余空间 */
+  width: 100%;
+  min-height: 300px;
+  position: relative;        /* 新增：让内部绝对定位元素以它为参考 */
+
+}
+
 /* 悬浮在地图右上角的“定位到我”按钮 */
 .locate-me-btn {
-  position: fixed;          /* 悬浮在视口上，而不是跟着文档流 */
-  top: 170px;                /* 距离顶部，可以根据你的标题高度微调 */
+  position: absolute;         /* 相对 .map-container 定位，而不是整个窗口 */
+  top: 20px;                /* 距离顶部，可以根据你的标题高度微调 */
   left: 10px;              /* 距离左侧 80 像素 */
-  z-index: 1000;            /* 保证在地图之上 */
+  z-index: 10;            /* 保证在地图之上 */
 
   padding: 6px 10px;
-  border-radius: 4px;
+  border-radius: 8px;
   border: none;
   background: rgba(255, 60, 0, 0.7); /* 半透明蓝色：0.7 为不透明度 */
   color: #fff;
   font-size: 25px;
   cursor: pointer;
-
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -242,3 +250,33 @@ display: none;
   font-size: 12px;
   cursor: pointer;
 }
+
+
+/* 整体左右分栏布局 */
+.layout {
+  display: flex;
+  align-items: stretch;
+  height: calc(100vh - 80px); /* 减去标题的高度，按需调整 */
+}
+
+/* 左侧面板：放导航和路由内容 */
+.side-panel {
+  width: 400px;              /* 左侧宽度，可按需要调整 */
+  min-width: 220px;
+  border-right: 1px solid #e0e0e0;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* 右侧面板：地图+搜索 */
+.map-panel {
+  flex: 1;                   /* 占据剩余空间 */
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+
+

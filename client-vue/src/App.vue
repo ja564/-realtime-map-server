@@ -1,73 +1,123 @@
 <template>
   <div id="app">
     <h1 class="page-title">文明珠海安全出行</h1>
-    
-    <!-- <nav>
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </nav>
-    <router-view/> -->
-    <button class="locate-me-btn" @click="startLocateMe">定位到我</button>
-    <button class="install-btn" :class="{ hide: !canInstall }" @click="onInstallClick">
-      安装到桌面
-    </button>
+
+    <!-- 整体左右布局容器 -->
+    <div class="layout">
+      <!-- 左侧：导航 + 路由内容 -->
+      <aside class="side-panel">
+        <nav class="nav-links">
+          <router-link to="/">Go to Home</router-link> |
+          <router-link to="/about">About</router-link>
+        </nav>
+
+        <!-- 路由页面内容会显示在这里 -->
+        <router-view />
+      </aside>
+
+      <!-- 右侧：地图 + 搜索 + 按钮 + 弹窗 -->
+      <main class="map-panel">
+        
+        <button class="install-btn" :class="{ hide: !canInstall }" @click="onInstallClick">
+          安装到桌面
+        </button>
+
         <!-- 地址搜索栏（香洲区） -->
-    <div class="search-bar">
-      <input
-        type="text"
-        v-model="addressLocal"
-        placeholder="此处输入珠海市香洲区子地址，例如（路名：XX路；地标：宝龙城、信息港；）"
-      />
-      <button type="button" class="btn-primary" @click="onSearchLocal">搜索</button>
-      <button type="button" class="btn-secondary" @click="onConfirmLocal">
-        确认并添加“请规范骑行”
-      </button>
-    </div>
-
-    <!-- 全局搜索 -->
-    <div class="search-row">
-      <input
-        type="text"
-        v-model="addressGlobal"
-        placeholder="输入任意城市/地址进行全局搜索，例如：广州市天河区体育西路"
-      />
-      <button type="button" class="btn-primary" @click="onSearchGlobal">搜索</button>
-      <button type="button" class="btn-secondary" @click="onConfirmGlobal">
-        确认并添加“请规范骑行”
-      </button>
-    </div>
-    <div id="map" class="map-container"></div>
-
-    <!-- 新建事件模态框 -->
-    <div id="event-modal" class="modal-overlay" :class="{ hide: !showCreateModal }">
-      <div class="modal-content">
-        <h2>在此处标记新事件</h2>
-        <form @submit.prevent="onSubmitEvent">
-          <textarea
-            v-model="newEventDesc"
-            placeholder="输入事件描述，例如：交警正在查电动车..."
-            required
-            minlength="5"
+        <div class="search-bar">
+          <!-- 原来的输入和按钮保持不变 -->
+          <input
+            type="text"
+            v-model="addressLocal"
+            placeholder="此处输入珠海市香洲区子地址，例如（路名：XX路；地标：宝龙城、信息港；）"
           />
-          <div class="modal-actions">
-            <button type="submit" class="btn-primary">提交</button>
-            <button type="button" class="btn-secondary" @click="onCancelCreate">取消</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- 事件详情模态框 -->
-    <div class="modal-overlay" :class="{ hide: !showDetailModal }">
-      <div class="modal-content">
-        <h2>事件详情</h2>
-        <p v-if="currentEvent">{{ currentEvent.description }}</p>
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" @click="showDetailModal = false">
-            关闭
+          <button type="button" class="btn-primary" @click="onSearchLocal">搜索</button>
+          <button type="button" class="btn-secondary" @click="onConfirmLocal">
+            确认并添加“请规范骑行”
           </button>
         </div>
-      </div>
+
+        <!-- 全局搜索 -->
+        <div class="search-row">
+          <input
+            type="text"
+            v-model="addressGlobal"
+            placeholder="输入任意城市/地址进行全局搜索，例如：广州市天河区体育西路"
+          />
+          <button type="button" class="btn-primary" @click="onSearchGlobal">搜索</button>
+          <button type="button" class="btn-secondary" @click="onConfirmGlobal">
+            确认并添加“请规范骑行”
+          </button>
+        </div>
+
+        <!-- 地图容器：放在右侧主体内部 -->
+        <div id="map" class="map-container">
+          <button class="locate-me-btn" @click="startLocateMe">定位到我</button>
+
+        </div>
+
+        <!-- 新建事件模态框 / 事件详情模态框 保持不变 -->
+        <div id="event-modal" class="modal-overlay" :class="{ hide: !showCreateModal }">
+          <div class="modal-content">
+            <h2>在此处标记新事件</h2>
+
+            <!-- <form @submit.prevent="onSubmitEvent">
+              <textarea
+                v-model="newEventDesc"
+                placeholder="输入事件描述，例如：交错动车..."
+                required
+                minlength="5"
+              ></textarea>
+              <div class="modal-actions">
+                <button type="submit" class="btn-primary">提交</button>
+                <button type="button" class="btn-secondary" @click="onCancelCreate">取消</button>
+              </div>
+            </form> -->
+
+            <!-- 使用 Element UI 表单 -->
+            <el-form @submit.native.prevent="onSubmitEvent">
+              <el-form-item label="点击填入">
+                <el-button
+                  v-for="item in quickEventPresets"
+                  :key="item"
+                  size="mini"
+                  @click="applyPreset(item)"
+                >
+                  {{ item }}
+                </el-button>
+
+
+                <el-form-item >
+                <el-input
+                  type="textarea"
+                  v-model="newEventDesc"
+                  :rows="4"
+                  placeholder="输入事件描述，例如：正在查车..."
+                />
+                </el-form-item>
+
+                
+              </el-form-item>
+
+              <div class="modal-actions">
+                <el-button type="primary" @click="onSubmitEvent">提交</el-button>
+                <el-button @click="onCancelCreate">取消</el-button>
+              </div>
+            </el-form>
+          </div>
+        </div>
+
+        <div class="modal-overlay" :class="{ hide: !showDetailModal }">
+          <div class="modal-content">
+            <h2>事件详情</h2>
+            <p v-if="currentEvent">{{ currentEvent.description }}</p>
+            <div class="modal-actions">
+              <button type="button" class="btn-secondary" @click="showDetailModal = false">
+                关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   </div>
 </template>
@@ -102,6 +152,7 @@ export default {
       addressGlobal: '',
       showCreateModal: false,
       newEventDesc: '',
+      quickEventPresets: ['抓车', '查酒驾', '行车不规范', '电动车专项行动'], // 新增
       showDetailModal: false,
       currentEvent: null,
 
@@ -312,13 +363,25 @@ export default {
       if (!res.ok) {
         const errText = await res.text();
         console.error('创建事件失败:', errText);
-        alert('创建事件失败');
+        alert('创建事件失败366');
         return null;
       }
       const { data: newEvent } = await res.json();
       this.events.push(newEvent);
       this.addMarkerToMap(newEvent);
       return newEvent;
+    },
+
+    applyPreset(text) {
+      // 覆盖填充
+      this.newEventDesc = text;
+
+      // 如果你想“追加”而不是覆盖，可以改成：
+      // if (this.newEventDesc.trim()) {
+      //   this.newEventDesc += `，${text}`;
+      // } else {
+      //   this.newEventDesc = text;
+      // }
     },
 
     // === 表单 / 搜索 / 定位 / PWA 按钮（根据你原 app.js 按逻辑搬进来） ===
@@ -463,7 +526,7 @@ export default {
         if (!res.ok) {
           const errText = await res.text();
           console.error('通过搜索创建事件失败:', errText);
-          alert('创建事件失败');
+          alert('创建事件失败529');
           return;
         }
 
@@ -506,7 +569,7 @@ export default {
         if (!res.ok) {
           const errText = await res.text();
           console.error('通过搜索创建事件失败:', errText);
-          alert('创建事件失败');
+          alert('创建事件失败572');
           return;
         }
 
@@ -599,7 +662,7 @@ export default {
                             if (!res.ok) {
                                 const errText = await res.text();
                                 console.error('通过定位创建事件失败:', errText);
-                                alert('创建事件失败');
+                                alert('创建事件失败665');
                                 return;
                             }
 
@@ -692,16 +755,21 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
+  text-align: left;
   color: #2c3e50;
 }
 
-nav {
-  padding: 30px;
+
+
+/* 导航链接样式 */
+.nav-links {
+  margin-bottom: 16px;
 
   a {
     font-weight: bold;
     color: #2c3e50;
+    text-decoration: none;
+    margin-right: 4px;
 
     &.router-link-exact-active {
       color: #42b983;

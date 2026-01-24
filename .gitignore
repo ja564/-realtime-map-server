@@ -1,2 +1,6 @@
 node_modelus 
 .env 
+node_modules/
+.vscode/
+dist/
+*.log

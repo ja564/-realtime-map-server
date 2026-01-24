@@ -18,7 +18,7 @@ const eventSchema = new mongoose.Schema({
       type: String,
       required: [true, '事件描述不能为空'],
       trim: true,
-      minlength: [5, '描述信息至少需要5个字符']
+      minlength: [1, '描述信息至少需要1个字符']
     },
     location: {
       type: pointSchema,

@@ -7,8 +7,8 @@
       <!-- 左侧：导航 + 路由内容 -->
       <aside class="side-panel">
         <nav class="nav-links">
-          <router-link to="/">Go to Home</router-link> |
-          <router-link to="/about">About</router-link>
+          <router-link to="/">公告</router-link> |
+          <router-link to="/about">关于</router-link>
         </nav>
 
         <!-- 路由页面内容会显示在这里 -->
@@ -119,6 +119,55 @@
         </div>
       </main>
     </div>
+
+    <!-- 新增：页面底部 footer -->
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-column">
+          <h4>文明出行</h4>
+          <ul>
+            <li>安全头盔</li>
+            <li>规范停放</li>
+            <li>礼让行人</li>
+          </ul>
+        </div>
+
+        <div class="footer-column">
+          <h4>平台信息</h4>
+          <ul>
+            <li>使用说明</li>
+            <li>数据来源</li>
+            <li>隐私与声明</li>
+          </ul>
+        </div>
+
+        <div class="footer-column">
+          <h4>联系与反馈</h4>
+          <ul>
+            <router-link to="/suggest">功能建议</router-link>
+          </ul>
+
+          <!-- 微信二维码 -->
+          <div class="wechat-qrcode">
+            <p>微信扫码联系作者：</p>
+            <img src="@/assets/wechat-qrcode.png" alt="微信二维码" />
+          </div>
+        </div>
+
+        <div class="footer-column newsletter">
+          <h4>订阅更新</h4>
+          <p>获取电动车整治与文明出行相关更新。</p>
+          <div class="newsletter-input">
+            <input type="email" placeholder="you@domain.com" />
+            <button type="button">订阅</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>Copyright © 2026 文明安全出行</span>
+      </div>
+    </footer>
   </div>
 </template>
 

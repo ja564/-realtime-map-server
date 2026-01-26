@@ -18,13 +18,7 @@ body {
   z-index: 2;           /* 保证在地图之上 */
 }
 
-/* 地图占据剩余空间 */
-#map {
-  /* flex: 1;              占据除标题外的所有高度 */
-  /* min-height: 0; */
-  width: 100%;
-  height: calc(100vh - 140px);  
-}
+
 
 
 
@@ -82,6 +76,50 @@ text-align: left;
 display: none;
 }
 
+
+
+/* 整体左右分栏布局 */
+.layout {
+  display: flex;
+  align-items: stretch;
+  height: 700px /* 减去标题的高度，按需调整 */
+}
+
+/* 左侧面板：放导航和路由内容 */
+.side-panel {
+  width: 550px;              /* 左侧宽度，可按需要调整 */
+  min-width: 220px;
+  border-right: 1px solid #e0e0e0;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* 右侧面板：地图+搜索 */
+.map-panel {
+  flex: 1;                   /* 占据剩余空间 */
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+
+
+.install-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: none;
+  background: rgba(0, 123, 255, 0.85);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
 .search-bar {
   display: flex;
   align-items: center;
@@ -137,6 +175,24 @@ display: none;
   border-radius: 4px;
 }
 
+.map-container {
+  flex: 1;                   /* 占满右侧面板剩余空间 */
+  width: 100%;
+  min-height: 0px;
+  position: relative;        /* 新增：让内部绝对定位元素以它为参考 */
+
+}
+
+/* 地图占据剩余空间 */
+#map {
+  /* flex: 1;              占据除标题外的所有高度 */
+  /* min-height: 0; */
+  width: 100%;
+  height: 100%;
+}
+
+
+
 
 /* .my-location-marker {
   width: 14px;
@@ -162,13 +218,7 @@ display: none;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
 }
 
-.map-container {
-  flex: 1;                   /* 占满右侧面板剩余空间 */
-  width: 100%;
-  min-height: 300px;
-  position: relative;        /* 新增：让内部绝对定位元素以它为参考 */
 
-}
 
 /* 悬浮在地图右上角的“定位到我”按钮 */
 .locate-me-btn {
@@ -237,46 +287,125 @@ display: none;
 .my-location-add-btn:hover {
   background: rgba(255, 255, 255, 1);
 }
-.install-btn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
+
+
+
+.site-footer {
+  /* margin-top: 24px; */
+  padding: 24px 40px ;
+  background: #050816;      /* 深色背景，类似你截图 */
+  color: #e5e7eb;
+  font-size: 14px;
+  
+}
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  border-top: 1px solid rgba(148, 163, 184, 0.3);
+  padding-top: 24px;
+  padding-bottom: 16px;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer-column {
+  min-width: 160px;
+}
+
+.footer-column h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #f9fafb;
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-column li {
+  margin-bottom: 4px;
+  color: #9ca3af;
+}
+
+.footer-column li:hover {
+  color: #e5e7eb;
+}
+
+.footer-column a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.footer-column a:hover {
+  text-decoration: underline;
+}
+
+.newsletter p {
+  margin: 0 0 8px;
+  color: #9ca3af;
+}
+
+.newsletter-input {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.newsletter-input input {
+  flex: 1;
   padding: 6px 10px;
   border-radius: 4px;
+  border: 1px solid #374151;
+  background: #020617;
+  color: #e5e7eb;
+  font-size: 13px;
+}
+
+.newsletter-input input::placeholder {
+  color: #6b7280;
+}
+
+.newsletter-input button {
+  padding: 6px 12px;
+  border-radius: 4px;
   border: none;
-  background: rgba(0, 123, 255, 0.85);
-  color: #fff;
-  font-size: 12px;
+  background: #3b82f6;
+  color: #f9fafb;
+  font-size: 13px;
   cursor: pointer;
 }
 
-
-/* 整体左右分栏布局 */
-.layout {
-  display: flex;
-  align-items: stretch;
-  height: calc(100vh - 80px); /* 减去标题的高度，按需调整 */
+.newsletter-input button:hover {
+  background: #2563eb;
 }
 
-/* 左侧面板：放导航和路由内容 */
-.side-panel {
-  width: 400px;              /* 左侧宽度，可按需要调整 */
-  min-width: 220px;
-  border-right: 1px solid #e0e0e0;
-  padding: 16px;
-  box-sizing: border-box;
-  overflow-y: auto;
+.footer-bottom {
+  border-top: 1px solid rgba(55, 65, 81, 0.8);
+  padding-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
 }
 
-/* 右侧面板：地图+搜索 */
-.map-panel {
-  flex: 1;                   /* 占据剩余空间 */
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  box-sizing: border-box;
+.wechat-qrcode {
+  margin-top: 8px;
 }
 
+.wechat-qrcode p {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: #9ca3af;
+}
 
-
+.wechat-qrcode img {
+  width: 96px;        /* 根据实际需要调整大小 */
+  height: 96px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #374151;
+}

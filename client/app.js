@@ -6,6 +6,25 @@ const mapTilerApiKey = '6kybY9Exzowy9u4AmHWC'; // 请替换成你自己的 MapTi
 // const API_URL = 'https://realtime-map-server-btex.onrender.com/api/events';
 const API_URL = 'https://realtime-map-server-1.onrender.com/api/events';
 
+(function () {
+  var ua = navigator.userAgent.toLowerCase();
+  var isWeixin = ua.indexOf('micromessenger') !== -1;
+
+  if (isWeixin) {
+    // 在微信内：用一个全屏遮罩盖住页面，引导用户用浏览器打开
+    document.write(
+      '<div style="position:fixed;top:0;left:0;width:100%;height:100%;' +
+        'background:rgba(0,0,0,0.85);z-index:9999;color:#fff;' +
+        'display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;box-sizing:border-box;">' +
+        '<div style="max-width:320px;">' +
+        '<h2 style="font-size:20px;margin-bottom:12px;">请在浏览器中打开</h2>' +
+        '<p style="font-size:14px;line-height:1.6;margin:0;">当前页面在微信内可能无法正常访问。<br/>请点击右上角“⋯⋯”菜单，选择“在浏览器中打开”。</p>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+})();
+
 const map = new maplibregl.Map({
     container: 'map', // 地图容器的 ID,"去把自己画进去"
     style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${mapTilerApiKey}`, 

@@ -386,6 +386,12 @@ export default {
 
     // === 表单 / 搜索 / 定位 / PWA 按钮（根据你原 app.js 按逻辑搬进来） ===
     async onSubmitEvent() {
+      const desc = this.newEventDesc.trim();
+      if (!desc || desc.length < 1) {
+        alert('事件描述至少需要 1 个字符');
+        return;
+      }
+
       if (!this.clickedLngLat) {
         alert('请先在地图上点击选择位置');
         return;

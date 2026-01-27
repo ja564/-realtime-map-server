@@ -8,7 +8,7 @@
       <aside class="side-panel">
         <nav class="nav-links">
           <router-link to="/">公告</router-link> |
-          <router-link to="/about">关于</router-link>
+          <router-link to="/about">使用说明</router-link>
         </nav>
 
         <!-- 路由页面内容会显示在这里 -->

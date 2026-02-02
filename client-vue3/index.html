@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1.0"
+    />
+    <title>文明珠海安全出行</title>
+
+    <!-- 图标 & PWA -->
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" href="/icons/icon-192.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#007bff" />
+
+    <!-- MapLibre 样式 -->
+    <link
+      href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <noscript>
+      <strong>
+        文明珠海安全出行 需要启用 JavaScript 才能正常运行，请在浏览器中开启 JavaScript。
+      </strong>
+    </noscript>
+    <div id="app"></div>
+
+    <!-- 关键：让 Vite 加载你的入口文件 -->
+    <script type="module" src="./src/main.ts"></script>
+    <!-- 如果入口是 main.js，则改成 /src/main.js -->
+  </body>
+</html>

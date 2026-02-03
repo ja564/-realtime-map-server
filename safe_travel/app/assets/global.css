@@ -1,0 +1,13 @@
+html,
+body,
+#safe {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#safe_container {
+  /*min-height: inherit;*/
+  display: flex;
+  flex-direction: column;
+}

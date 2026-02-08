@@ -20,7 +20,11 @@ function onSubmit() {
 </script>
 
 <template>
-  <el-dialog v-model="dialogFormVisible" title="功能建议反馈" width="500">
+  <el-dialog
+    v-model="dialogFormVisible"
+    title="功能建议反馈"
+    :width="$device.isDesktop ? 500 : 'calc(100vw - 40px)'"
+  >
     <p class="tip">欢迎提交你对本应用的功能建议或改进想法。</p>
     <el-form label-width="80px">
       <el-form-item label="称呼">

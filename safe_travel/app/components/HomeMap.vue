@@ -678,7 +678,7 @@ async function onInstallClick() {
   <el-dialog
     v-model="showCreateModal"
     title="在此处标记新事件"
-    width="500"
+    :width="$device.isDesktop ? 500 : 'calc(100vw - 40px)'"
     :before-close="onCancelCreate"
   >
     <div class="new_event_box">
@@ -718,7 +718,7 @@ async function onInstallClick() {
   <el-dialog
     v-model="showDetailModal"
     title="事件详情"
-    width="500"
+    :width="$device.isDesktop ? 500 : 'calc(100vw - 40px)'"
     :before-close="onCancelCreate"
     ><div class="modal-content">
       <p v-if="currentEvent">{{ currentEvent.description }}</p>

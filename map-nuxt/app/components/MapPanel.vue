@@ -1,22 +1,7 @@
+
 <template>
-  <div id="app">
-    <h1 class="page-title">文明珠海安全出行</h1>
-
-    <!-- 整体左右布局容器 -->
-    <div class="layout">
-      <!-- 左侧：导航 + 路由内容 -->
-      <aside class="side-panel">
-        <nav class="nav-links">
-          <router-link to="/">公告</router-link> |
-          <router-link to="/about">使用说明</router-link>
-        </nav>
-
-        <!-- 路由页面内容会显示在这里 -->
-        <router-view />
-      </aside>
-
-      <!-- 右侧：地图 + 搜索 + 按钮 + 弹窗 -->
-      <div class="map-panel">
+  <!-- 直接粘你现在 main.map-panel 里面的内容 -->
+  <div class="map-panel">
         
         <button class="install-btn" :class="{ hide: !canInstall }" @click="onInstallClick">
           安装到桌面
@@ -118,63 +103,12 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- 新增：页面底部 footer -->
-    <footer class="site-footer">
-      <div class="footer-inner">
-        <div class="footer-column">
-          <h4>文明出行</h4>
-          <ul>
-            <li>安全头盔</li>
-            <li>规范停放</li>
-            <li>礼让行人</li>
-          </ul>
-        </div>
-
-        <div class="footer-column">
-          <h4>平台信息</h4>
-          <ul>
-            <li>使用说明</li>
-            <li>数据来源</li>
-            <li>隐私与声明</li>
-          </ul>
-        </div>
-
-        <div class="footer-column">
-          <h4>联系与反馈</h4>
-          <ul>
-            <router-link to="/suggest">功能建议</router-link>
-          </ul>
-
-          <!-- 微信二维码 -->
-          <div class="wechat-qrcode">
-            <p>微信扫码联系作者：</p>
-            <img src="@/assets/wechat-qrcode.png" alt="微信二维码" />
-          </div>
-        </div>
-
-        <div class="footer-column newsletter">
-          <h4>订阅更新</h4>
-          <p>获取电动车整治与文明出行相关更新。</p>
-          <div class="newsletter-input">
-            <input type="email" placeholder="you@domain.com" />
-            <button type="button">订阅</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="footer-bottom">
-        <span>Copyright © 2026 文明安全出行</span>
-      </div>
-    </footer>
-  </div>
 </template>
 
 <script>
 import maplibregl from 'maplibre-gl';
 
-const mapTilerApiKey = '6kybY9Exzowy9u4AmHWC';
+const mapTilerApiKey = '...';
 const API_URL = 'https://realtime-map-server-1.onrender.com/api/events';
 
 const PI = 3.1415926535897932384626;
@@ -182,7 +116,7 @@ const A = 6378245.0;
 const EE = 0.006693421622965943;
 
 export default {
-  name: 'App',
+  name: 'MapPanel',
   data() {
     return {
       // 地图和数据
@@ -208,9 +142,11 @@ export default {
       // PWA
       canInstall: false,
       deferredPrompt: null,
+      // 你现在 data() 里的内容全部照搬
     };
   },
   mounted() {
+    // 你现在的 mounted() 原样复制
     // 1. 初始化地图
     this.map = new maplibregl.Map({
       container: 'map',
@@ -801,34 +737,11 @@ export default {
 
     // TODO: 按你现有 app.js 复制 onSearchLocal / onSearchGlobal / onConfirmLocal /
     // onConfirmGlobal / startLocateMe 内容……
+    // 你现在 methods 里的所有函数原样复制
   },
 };
 </script>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: left;
-  color: #2c3e50;
-}
-
-
-
-/* 导航链接样式 */
-.nav-links {
-  margin-bottom: 16px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-    text-decoration: none;
-    margin-right: 4px;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
+<style scoped lang="scss">
+/* 针对 map-panel 的样式，可以从原 App.vue 或 style.scss 里复制 */
 </style>

@@ -3,8 +3,7 @@
 我开发了一个 **【实时互助地图】** 小工具，专门分享最新的路况动态，帮大家避开不必要的麻烦。
 
 在线体验地址：  
-https://map.orange3dfashion.com
-OR
+
 https://map.xianquan.net
 
 ---
